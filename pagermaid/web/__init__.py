@@ -83,7 +83,7 @@ class Web:
             )
         )
         server_config = self.web_server.config
-        server_config.setup_event_loop()
+        server_config.get_loop_factory()
         if not server_config.loaded:
             server_config.load()
         self.web_server.lifespan = server_config.lifespan_class(server_config)
