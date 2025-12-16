@@ -27,3 +27,8 @@ def get_footer() -> str:
 def get_web_login_html() -> str:
     """获取 web login。"""
     return get_html(html_base_path / "web_login.html")
+
+
+def get_web_login_passkey_html() -> str:
+    """获取 web login passkey。"""
+    return get_html(html_base_path / "web_login_passkey.html")

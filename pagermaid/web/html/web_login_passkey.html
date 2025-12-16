@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" integrity="sha512-t4GWSVZO1eC8BM339Xd7Uphw5s17a86tIZIj8qRxhnKub6WoyhnrxeCIMeAqBPgdZGlCcG2PrZjMc+Wr78+5Xg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.min.js" integrity="sha512-3dZ9wIrMMij8rOH7X3kLfXAzwtcHpuYpEgQg1OA4QAob1e81H8ntUQmQm3pBudqIoySO5j0tHN4ENzA6+n2r4w==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.4.0/axios.min.js" integrity="sha512-uMtXmF28A2Ab/JJO2t/vYhlaa/3ahUOgj1Zf27M5rOo8/+fcTUVH0/E0ll68njmjrLqOBjXM3V9NiPFL5ywWPQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+
+    <title>Passkey Login - PagerMaid-Pyro</title>
+    <style>
+        img {
+            display: inline-block!important;
+        }
+    </style>
+</head>
+<body>
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-4">
+            <div class="card" style="">
+                <div class="card-header bg-dark text-white text-center">
+                    <h3 class="mb-0">Passkey Login</h3>
+                </div>
+                <div class="card-body" style="display: block" id="passkeyDiv">
+                    <div class="text-center mb-3">
+                        <button type="button" class="btn btn-primary" id="passkeyBtn">Login with Passkey</button>
+                    </div>
+                </div>
+                <div style="margin-left: 10%; width: 80%; display: none" class="text-center mb-3" id="pwdDiv">
+                    <div class="mb-3" id="hintDiv" style="display: none">
+                        <p class="text-muted" id="hintText"></p>
+                    </div>
+                    <form id="pwdForm">
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Two-factor Authentication Password</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary" >Login</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框 -->
+<div class="modal" id="errorModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- 模态框头部 -->
+            <div class="modal-header">
+                <h4 class="modal-title">Notice</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- 模态框内容 -->
+            <div class="modal-body" id="errorText"></div>
+
+            <!-- 模态框底部 -->
+            <div class="modal-footer">
+                <button type="button" class="btn" data-bs-dismiss="modal" id="errorButton">I know</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    const passkeyDiv = document.getElementById('passkeyDiv');
+    const passkeyBtn = document.getElementById('passkeyBtn');
+    const PWDDiv = document.getElementById('pwdDiv');
+    const hintDiv = document.getElementById('hintDiv');
+    const hintText = document.getElementById('hintText');
+    const errorModel = new bootstrap.Modal(document.getElementById('errorModal'));
+    const errorText = document.getElementById('errorText');
+    const errorButton = document.getElementById('errorButton');
+    const password = document.getElementById('password');
+
+    function getHeader() {
+        return {
+            headers: {
+                token: localStorage.getItem("token") || ""
+            }
+        }
+    }
+
+    function redirectToLogin() {
+        window.location.href = '/admin';
+    }
+
+    function showError(text) {
+        if (errorButton.classList.contains('btn-success')) {
+            errorButton.classList.remove('btn-success');
+        }
+        errorButton.classList.add('btn-danger');
+        errorText.innerHTML = text;
+        errorModel.show();
+    }
+
+    function showSuccess(text) {
+        if (errorButton.classList.contains('btn-danger')) {
+            errorButton.classList.remove('btn-danger');
+        }
+        errorButton.classList.add('btn-success');
+        errorText.innerHTML = text;
+        errorModel.show();
+    }
+
+    function process_data(data) {
+        switch (data.status) {
+            case 0:
+                showSuccess(data.msg);
+                redirectToLogin();
+                break;
+            case 2:
+                passkeyDiv.style.display = 'none';
+                PWDDiv.style.display = 'block';
+                // Display password hint if available
+                if (data.content) {
+                    hintText.textContent = 'Hint: ' + data.content;
+                    hintDiv.style.display = 'block';
+                } else {
+                    hintDiv.style.display = 'none';
+                }
+                break;
+            case 3:
+                showError(data.msg);
+                break;
+            default:
+                showError('Unknown error');
+        }
+    }
+
+    function urlSafeBase64ToStr(urlSafeBase64) {
+      let base64 = urlSafeBase64
+        .replace(/-/g, '+')  // 将 - 替换为 +
+        .replace(/_/g, '/'); // 将 _ 替换为 /
+
+      const padLength = (4 - (base64.length % 4)) % 4;
+      base64 += '='.repeat(padLength);
+
+      return atob(base64);
+    }
+
+    async function handlePasskeyLogin() {
+        try {
+            // Step 1: Get passkey parameters from backend
+            const response = await axios.get('pagermaid/api/web_login_passkey', getHeader());
+            const data = response.data;
+            
+            if (data.status !== 1) {
+                showError('Failed to get passkey parameters: ' + data.msg);
+                return;
+            }
+            
+            const { challenge, rpId, timeout, userVerification } = data.content;
+            
+            // Step 2: Implement passkey verification prompt
+            const publicKeyCredentialRequestOptions = {
+                challenge: Uint8Array.from(urlSafeBase64ToStr(challenge), c => c.charCodeAt(0)),
+                rpId: rpId,
+                timeout: timeout,
+                userVerification: userVerification,
+                allowCredentials: []
+            };
+            
+            const assertion = await navigator.credentials.get({
+                publicKey: publicKeyCredentialRequestOptions
+            });
+            
+            // Step 3: Send verification result to backend
+            const credential = {
+                id: assertion.id,
+                rawId: btoa(String.fromCharCode.apply(null, new Uint8Array(assertion.rawId))),
+                type: assertion.type,
+                response: {
+                    authenticatorData: btoa(String.fromCharCode.apply(null, new Uint8Array(assertion.response.authenticatorData))),
+                    clientDataJSON: btoa(String.fromCharCode.apply(null, new Uint8Array(assertion.response.clientDataJSON))),
+                    signature: btoa(String.fromCharCode.apply(null, new Uint8Array(assertion.response.signature))),
+                    userHandle: assertion.response.userHandle ? btoa(String.fromCharCode.apply(null, new Uint8Array(assertion.response.userHandle))) : null
+                }
+            };
+            
+            const postResponse = await axios.post('pagermaid/api/web_login_passkey', credential, getHeader());
+            process_data(postResponse.data);
+            
+        } catch (error) {
+            console.error('Passkey login error:', error);
+            showError('Passkey login failed: ' + (error.message || 'Unknown error'));
+        }
+    }
+
+    function submitPwd() {
+        const pwd = password.value;
+        
+        axios.post('pagermaid/api/web_login_passkey_2fa', {
+            password: pwd
+        }, getHeader())
+        .then(function (response) {
+            const data = response.data;
+            process_data(data);
+        })
+        .catch(function (error) {
+            if (error.response.status !== 200) {
+                redirectToLogin();
+                return;
+            }
+            console.log(error);
+            showError(error.message);
+        });
+    }
+
+    passkeyBtn.addEventListener('click', handlePasskeyLogin);
+    document.getElementById("pwdForm").addEventListener('submit', function (e) {
+        e.preventDefault();
+        submitPwd();
+    });
+</script>
+</body>
+</html>

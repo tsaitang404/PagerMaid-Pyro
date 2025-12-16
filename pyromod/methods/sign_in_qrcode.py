@@ -12,21 +12,19 @@ from pagermaid.config import Config
 from pyromod.utils.errors import QRCodeWebNeedPWDError, QRCodeWebCodeError
 
 
-async def migrate_to_dc(
-    client: "Client", req: "pyrogram.raw.types.auth.LoginTokenMigrateTo"
-):
-    dc_option = await client.get_dc_option(req.dc_id, ipv6=client.ipv6)
+async def migrate_to_dc(client: "Client", dc_id: int):
+    dc_option = await client.get_dc_option(dc_id, ipv6=client.ipv6)
     await client.session.stop()
 
     client.session = await client.get_session(
-        dc_id=req.dc_id,
+        dc_id=dc_id,
         server_address=dc_option.ip_address,
         port=dc_option.port,
         export_authorization=False,
         temporary=True,
     )
 
-    await client.storage.dc_id(req.dc_id)
+    await client.storage.dc_id(dc_id)
     await client.storage.server_address(dc_option.ip_address)
     await client.storage.port(dc_option.port)
     await client.storage.auth_key(client.session.auth_key)
@@ -47,7 +45,7 @@ async def sign_in_qrcode(
         token = base64.b64encode(req.token)
         return f"tg://login?token={token.decode('utf-8')}"
     elif isinstance(req, pyrogram.raw.types.auth.LoginTokenMigrateTo):
-        await migrate_to_dc(client, req)
+        await migrate_to_dc(client, req.dc_id)
 
         req = await client.invoke(
             pyrogram.raw.functions.auth.ImportLoginToken(token=req.token)
