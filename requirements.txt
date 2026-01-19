@@ -10,11 +10,11 @@ anyio==4.5.2 ; python_full_version < '3.9'
     # via
     #   httpx
     #   starlette
-anyio==4.12.0 ; python_full_version >= '3.9'
+anyio==4.12.1 ; python_full_version >= '3.9'
     # via
     #   httpx
     #   starlette
-apscheduler==3.11.1
+apscheduler==3.11.2
     # via pagermaid-pyro
 backports-zoneinfo==0.2.1 ; python_full_version < '3.9'
     # via
@@ -22,7 +22,7 @@ backports-zoneinfo==0.2.1 ; python_full_version < '3.9'
     #   tzlocal
 casbin==1.43.0
     # via pagermaid-pyro
-certifi==2025.11.12
+certifi==2026.1.4
     # via
     #   httpcore
     #   httpx
@@ -37,7 +37,9 @@ coloredlogs==15.0.1
     # via pagermaid-pyro
 exceptiongroup==1.3.1 ; python_full_version < '3.11'
     # via anyio
-fastapi==0.124.0
+fastapi==0.124.4 ; python_full_version < '3.9'
+    # via pagermaid-pyro
+fastapi==0.128.0 ; python_full_version >= '3.9'
     # via pagermaid-pyro
 h11==0.16.0
     # via
@@ -63,9 +65,9 @@ pillow==10.4.0 ; python_full_version < '3.9'
     # via pagermaid-pyro
 pillow==11.3.0 ; python_full_version == '3.9.*'
     # via pagermaid-pyro
-pillow==12.0.0 ; python_full_version >= '3.10'
+pillow==12.1.0 ; python_full_version >= '3.10'
     # via pagermaid-pyro
-psutil==7.1.3
+psutil==7.2.1
     # via pagermaid-pyro
 pyaes==1.6.1
     # via pyrogram
@@ -101,8 +103,8 @@ pytz==2025.2
     # via pagermaid-pyro
 pyyaml==6.0.3
     # via pagermaid-pyro
-ruff==0.14.8
-sentry-sdk==2.47.0
+ruff==0.14.13
+sentry-sdk==2.49.0
     # via pagermaid-pyro
 simpleeval==0.9.13 ; python_full_version < '3.9'
     # via casbin
@@ -148,7 +150,7 @@ typing-extensions==4.15.0 ; python_full_version >= '3.9'
     #   uvicorn
 typing-inspection==0.4.2 ; python_full_version >= '3.9'
     # via pydantic
-tzdata==2025.2 ; sys_platform == 'win32'
+tzdata==2025.3 ; sys_platform == 'win32'
     # via tzlocal
 tzlocal==5.2 ; python_full_version < '3.9'
     # via apscheduler
@@ -156,9 +158,11 @@ tzlocal==5.3.1 ; python_full_version >= '3.9'
     # via apscheduler
 urllib3==2.2.3 ; python_full_version < '3.9'
     # via sentry-sdk
-urllib3==2.6.0 ; python_full_version >= '3.9'
+urllib3==2.6.3 ; python_full_version >= '3.9'
     # via sentry-sdk
 uvicorn==0.33.0 ; python_full_version < '3.9'
     # via pagermaid-pyro
-uvicorn==0.38.0 ; python_full_version >= '3.9'
+uvicorn==0.39.0 ; python_full_version == '3.9.*'
+    # via pagermaid-pyro
+uvicorn==0.40.0 ; python_full_version >= '3.10'
     # via pagermaid-pyro
