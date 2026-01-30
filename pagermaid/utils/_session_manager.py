@@ -185,7 +185,7 @@ class SessionConvert:
                 self.session.port,
                 self.session.auth_key,
                 0,
-                b'',
+                b"",
             ),
         )
         conn.commit()

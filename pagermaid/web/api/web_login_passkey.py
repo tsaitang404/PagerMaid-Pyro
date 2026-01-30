@@ -8,7 +8,11 @@ from pagermaid.utils import logs
 from pagermaid.web.api import authentication
 from pagermaid.web.api.web_login import web_login, UserModel
 from pagermaid.web.html import get_web_login_passkey_html
-from pyromod.methods.sign_in_passkey import get_passkey_options, CredentialModel, authorize_by_passkey_web
+from pyromod.methods.sign_in_passkey import (
+    get_passkey_options,
+    CredentialModel,
+    authorize_by_passkey_web,
+)
 from pyromod.utils.errors import QRCodeWebNeedPWDError
 
 route = APIRouter()
@@ -16,7 +20,9 @@ html_route = APIRouter()
 web_login_passkey_html = get_web_login_passkey_html()
 
 
-@route.get("/web_login_passkey", response_class=JSONResponse, dependencies=[authentication()])
+@route.get(
+    "/web_login_passkey", response_class=JSONResponse, dependencies=[authentication()]
+)
 async def get_passkey_parameters():
     """Get passkey parameters for login"""
     if web_login.has_login():
@@ -34,7 +40,9 @@ async def get_passkey_parameters():
         return {"status": 3, "msg": f"Failed to get passkey parameters: {str(e)}"}
 
 
-@route.post("/web_login_passkey", response_class=JSONResponse, dependencies=[authentication()])
+@route.post(
+    "/web_login_passkey", response_class=JSONResponse, dependencies=[authentication()]
+)
 async def verify_passkey(credential: CredentialModel):
     """Verify passkey credential"""
     if web_login.has_login():
@@ -57,7 +65,11 @@ async def verify_passkey(credential: CredentialModel):
         return {"status": 3, "msg": f"{type(e)}"}
 
 
-@route.post("/web_login_passkey_2fa", response_class=JSONResponse, dependencies=[authentication()])
+@route.post(
+    "/web_login_passkey_2fa",
+    response_class=JSONResponse,
+    dependencies=[authentication()],
+)
 async def verify_2fa(user: UserModel):
     """Verify 2FA password"""
     if web_login.has_login():
@@ -79,6 +91,8 @@ async def verify_2fa(user: UserModel):
         return {"status": 3, "msg": f"{type(e)}"}
 
 
-@html_route.get("/web_login_passkey", response_class=HTMLResponse, dependencies=[authentication()])
+@html_route.get(
+    "/web_login_passkey", response_class=HTMLResponse, dependencies=[authentication()]
+)
 async def get_web_login_passkey():
     return web_login_passkey_html

@@ -50,12 +50,14 @@ async def get_passkey_options(client: "Client") -> PasskeyLoginOptionsModel:
 
 
 async def authorize_by_passkey(client: "Client", credential: CredentialModel):
-    user_handle = base64.b64decode(credential.response.userHandle).decode('utf-8')
-    user_handle_split = user_handle.split(':')
+    user_handle = base64.b64decode(credential.response.userHandle).decode("utf-8")
+    user_handle_split = user_handle.split(":")
     dc_id = int(user_handle_split[0])
     user_id = int(user_handle_split[1])
 
-    client_data = pyrogram.raw.types.DataJSON(data=base64.b64decode(credential.response.clientDataJSON).decode('utf-8'))
+    client_data = pyrogram.raw.types.DataJSON(
+        data=base64.b64decode(credential.response.clientDataJSON).decode("utf-8")
+    )
     response = pyrogram.raw.types.InputPasskeyResponseLogin(
         client_data=client_data,
         authenticator_data=base64.b64decode(credential.response.authenticatorData),
@@ -72,7 +74,9 @@ async def authorize_by_passkey(client: "Client", credential: CredentialModel):
     )
     if dc_id != client.session.dc_id:
         login.from_dc_id = client.session.dc_id
-        login.from_auth_key_id = int.from_bytes(client.session.auth_key_id, byteorder='little', signed=True)
+        login.from_auth_key_id = int.from_bytes(
+            client.session.auth_key_id, byteorder="little", signed=True
+        )
 
         await migrate_to_dc(client, dc_id)
 
@@ -84,8 +88,11 @@ async def authorize_by_passkey(client: "Client", credential: CredentialModel):
         return pyrogram.types.User._parse(client, req.user)
 
 
-async def authorize_by_passkey_web(client: "Client", credential: Optional[CredentialModel] = None,
-                                   password: Optional[str] = None):
+async def authorize_by_passkey_web(
+    client: "Client",
+    credential: Optional[CredentialModel] = None,
+    password: Optional[str] = None,
+):
     try:
         if password:
             client.password = password

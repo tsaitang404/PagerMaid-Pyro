@@ -118,6 +118,8 @@ async def web_login_password(user: UserModel):
         return {"status": 3, "msg": f"{type(e)}"}
 
 
-@html_route.get("/web_login", response_class=HTMLResponse, dependencies=[authentication()])
+@html_route.get(
+    "/web_login", response_class=HTMLResponse, dependencies=[authentication()]
+)
 async def get_web_login():
     return web_login_html
